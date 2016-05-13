@@ -1,7 +1,7 @@
 apply plugin:'java'
 
 ext{
-
+  springDataVersion = '1.10.1.RELEASE'
 }
 
 repositories{
@@ -14,10 +14,12 @@ jar{
   version = '1.0-SNAPSHOT'
 }
 
-task.withType(JavaCompile){
+tasks.withType(JavaCompile){
   options.encoding = 'UTF-8'
 }
 
 dependencies{
+  compile "com.gl.roadaccidents:road-accidents-common:+"
 
+  compile "org.springframework.data:spring-data-jpa:${springDataVersion}"
 }
