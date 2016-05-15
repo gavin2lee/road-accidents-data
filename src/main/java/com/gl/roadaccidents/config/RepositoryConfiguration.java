@@ -29,7 +29,8 @@ import java.util.Date;
  */
 @Configuration
 //@EnableLoadTimeWeaving
-@Import({DataSourceConfiguration.class})
+//@Import({DataSourceConfiguration.class})
+@ImportResource(locations={"classpath:config/datasource.xml"})
 @EnableTransactionManagement
 @PropertySource("classpath:config/data-access.properties")
 @EnableJpaRepositories(basePackages={"com.gl.roadaccidents.repository","com.gl.roadaccidents.model"})

@@ -15,6 +15,12 @@ public class ConfigurableRoadAccidentDataResourceScanner implements RoadAccident
     private Resource policeForce;
     private Resource districtAuthority;
 
+    private List<Resource> roadAccidents;
+
+    public void setRoadAccidents(List<Resource> roadAccidents) {
+        this.roadAccidents = roadAccidents;
+    }
+
     public void setAccidentSeverity(Resource accidentSeverity) {
         this.accidentSeverity = accidentSeverity;
     }
@@ -41,7 +47,7 @@ public class ConfigurableRoadAccidentDataResourceScanner implements RoadAccident
 
     @Override
     public List<Resource> findRoadAccidentDataResources() {
-        return null;
+        return roadAccidents;
     }
 
     @Override

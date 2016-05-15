@@ -1,8 +1,11 @@
 package com.gl.roadaccidents.util.loader;
 
+import com.gl.roadaccidents.builder.RoadAccidentBuilder;
 import com.gl.roadaccidents.model.*;
 import com.gl.roadaccidents.service.DataLoadService;
 import com.gl.roadaccidents.service.RoadAccidentDataResourceScanner;
+import com.gl.roadaccidents.vo.RoadAccidentVo;
+import com.gl.roadaccidents.vo.RoadAccidentVoBuilder;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -15,14 +18,24 @@ import org.springframework.core.io.Resource;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.concurrent.Callable;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by gavin on 16-5-14.
  */
 public class RoadAccidentDataLoader {
     private static final Logger log = LoggerFactory.getLogger(RoadAccidentDataLoader.class);
+
+    public static final String KEY_CLEAR_ROAD_ACCIDENTS = "clearData";
 
     @Autowired
     private DataLoadService dataLoadService;
@@ -31,17 +44,34 @@ public class RoadAccidentDataLoader {
     @Qualifier("dataSourceScanner")
     private RoadAccidentDataResourceScanner scanner;
 
-    public void load(){
+    private BlockingQueue<RoadAccidentVo> roadAccidentVosToPut = new ArrayBlockingQueue<RoadAccidentVo>(1000);
+
+    public BlockingQueue<RoadAccidentVo> getRoadAccidentVosToPut() {
+        return roadAccidentVosToPut;
+    }
+
+    public void load() {
         loadStaticData();
         loadRoadAccidentData();
     }
 
-    protected void loadStaticData(){
-        dataLoadService.clearStaticData();
+    protected void loadStaticData() {
+        log.debug("Start to clear static data.");
+        clearStaticData();
+        log.debug("End for clearing static data.");
+
+        log.info("Start to load static data.");
         doLoadStaticData();
+        log.info("End up loading static data.");
     }
 
-    protected void doLoadStaticData(){
+    protected void clearStaticData() {
+        clearRoadAccidents();
+        dataLoadService.clearStaticData();
+
+    }
+
+    protected void doLoadStaticData() {
         loadWeatherCondition();
         loadAccidentSeverity();
         loadLightCondition();
@@ -50,7 +80,7 @@ public class RoadAccidentDataLoader {
         loadDistrictAuthority();
     }
 
-    private void loadDistrictAuthority(){
+    private void loadDistrictAuthority() {
         Resource resource = scanner.findDistrictAuthorityDataResource();
         Reader reader = null;
         try {
@@ -70,8 +100,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -80,7 +110,7 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void loadRoadSurface(){
+    private void loadRoadSurface() {
         Resource resource = scanner.findRoadSurfaceDataResource();
         Reader reader = null;
         try {
@@ -100,8 +130,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -110,7 +140,7 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void loadPoliceForce(){
+    private void loadPoliceForce() {
         Resource resource = scanner.findPoliceForceDataResource();
         Reader reader = null;
         try {
@@ -130,8 +160,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -140,7 +170,7 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void loadLightCondition(){
+    private void loadLightCondition() {
         Resource resource = scanner.findLightConditionDataResource();
         Reader reader = null;
         try {
@@ -160,8 +190,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -170,7 +200,7 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void loadAccidentSeverity(){
+    private void loadAccidentSeverity() {
         Resource resource = scanner.findAccidentSeverityDataResource();
         Reader reader = null;
         try {
@@ -190,8 +220,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -200,7 +230,7 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void loadWeatherCondition(){
+    private void loadWeatherCondition() {
         Resource resource = scanner.findWeatherConditionDataResource();
         Reader reader = null;
         try {
@@ -221,8 +251,8 @@ public class RoadAccidentDataLoader {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }finally{
-            if(reader != null){
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
@@ -231,23 +261,244 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    protected void loadRoadAccidentData(){
-        //TODO
+    protected void loadRoadAccidentData() {
+        doLoadRoadAccidentData();
     }
 
-    public static class RoadAccidentCvsResourceReader implements Callable<Long>{
-
-        @Override
-        public Long call() throws Exception {
-            return null;
+    protected void clearRoadAccidents() {
+        String clearData = System.getProperty(KEY_CLEAR_ROAD_ACCIDENTS);
+        boolean hasToClearRoadAccidentData = Boolean.valueOf(clearData);
+        if (hasToClearRoadAccidentData) {
+            dataLoadService.clearRoadAccident();
         }
     }
 
-    public static class RoadAccidentDataPutter implements Callable<Long>{
+    private void doLoadRoadAccidentData() {
+        FutureTask<Long> reader = new FutureTask<Long>(new RoadAccidentCvsResourceReader(scanner.findRoadAccidentDataResources(), this.getRoadAccidentVosToPut()));
+        FutureTask<Long> putter = new FutureTask<Long>(new RoadAccidentDataPutter(getRoadAccidentVosToPut(), this.dataLoadService));
+
+        new Thread(reader).start();
+        new Thread(putter).start();
+    }
+
+    public static class RoadAccidentCvsResourceReader implements Callable<Long> {
+        private BlockingQueue<RoadAccidentVo> toStore;
+        private List<Resource> resourcesToRead;
+
+        private static final Logger log = LoggerFactory.getLogger(RoadAccidentCvsResourceReader.class);
+
+        public RoadAccidentCvsResourceReader(List<Resource> resourcesToRead, BlockingQueue<RoadAccidentVo> queue) {
+            this.resourcesToRead = resourcesToRead;
+            this.toStore = queue;
+        }
 
         @Override
         public Long call() throws Exception {
+            log.info(">>>>>>>>>>>>>>>>>> Reading start <<<<<<<<<<<<<<<<<<<<<");
+            log.info(new Date().toString());
+            long amountOfRecords = 0L;
+            log.info("size of resources to read : " + resourcesToRead.size());
+            for (Resource r : resourcesToRead) {
+                amountOfRecords += processOneResource(r);
+            }
+
+            log.info("amount of read records : " + amountOfRecords);
+            log.info(" >>>>>>>>>>>>>>>>>   Reading finished  <<<<<<<<<<<<<<<<");
+            log.info(new Date().toString());
+            return amountOfRecords;
+        }
+
+        private Long processOneResource(Resource resource) {
+            long result = 0L;
+            Reader reader = null;
+            try {
+                reader = new InputStreamReader(resource.getInputStream());
+                Iterable<CSVRecord> records = new CSVParser(reader, CSVFormat.EXCEL.withHeader());
+                for (CSVRecord record : records) {
+                    RoadAccidentVo vo = parseOneRecord(record);
+                    this.toStore.put(vo);
+                    //log.debug("store :" + vo.toString());
+                    result++;
+                    if(result % 1000 == 0){
+                        log.debug(String.format("Have already read %s from %s at %s", ""+result, resource.getURI().toString(), new Date().toString()));
+                    }
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+            return result;
+        }
+
+        private RoadAccidentVo parseOneRecord(CSVRecord record) {
+            String accidentId = record.get("Accident_Index");
+            RoadAccidentVo vo = new RoadAccidentVoBuilder(accidentId)
+                    .setLongitude(record.get("Longitude"))
+                    .setLatitude(record.get("Latitude"))
+                    .setPoliceForce(record.get("Police_Force"))
+                    .setAccidentSeverity(record.get("Accident_Severity"))
+                    .setNumberOfVehicles(record.get("Number_of_Vehicles"))
+                    .setNumberOfCasualties(record.get("Number_of_Casualties"))
+                    .setOccurOn(record.get("Date"))
+                    .setDayOfWeek(record.get("Day_of_Week"))
+                    .setOccurAt(record.get("Time"))
+                    .setDistrictAuthority(record.get("Local_Authority_(District)"))
+                    .setLightCondition(record.get("Light_Conditions"))
+                    .setWeatherCondition(record.get("Weather_Conditions"))
+                    .setRoadSurface(record.get("Road_Surface_Conditions"))
+                    .build();
+            return vo;
+        }
+    }
+
+    public static class RoadAccidentDataPutter implements Callable<Long> {
+        private BlockingQueue<RoadAccidentVo> toStore;
+        private DataLoadService service;
+
+        private Map<String, List<?>> staticData;
+
+        private ReentrantLock lock = new ReentrantLock();
+
+        private static final Logger log = LoggerFactory.getLogger(RoadAccidentDataPutter.class);
+
+        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service) {
+            this.toStore = toStore;
+            this.service = service;
+
+        }
+
+        @Override
+        public Long call() throws Exception {
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>> Putting  start    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            log.info(new Date().toString());
+            lock.lock();
+            try {
+                if (staticData == null) {
+                    staticData = service.retrieveStaticData();
+                }
+            } finally {
+                lock.unlock();
+            }
+
+            long count = 0L;
+            RoadAccidentVo vo = null;
+            while ((vo = toStore.poll(100L, TimeUnit.SECONDS)) != null) {
+                count++;
+                RoadAccident ra = processRoadAccidentVo(vo);
+                service.addRoadAccident(ra);
+
+                if(count % 1000 == 0){
+                    log.debug(String.format("Have already put %s to %s at %s", ""+count, "road_accident", new Date().toString()));
+                }
+            }
+
+            log.info(String.format("Put %l records into database.", count));
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>>>   Putting finished <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            log.info(new Date().toString());
+
+            return count;
+        }
+
+        private PoliceForce findPoliceForce(String code) {
+            List<?> entities = staticData.get(PoliceForce.class.getName());
+            for (Object o : entities) {
+                PoliceForce pf = (PoliceForce) o;
+                if (pf.getCode() == Integer.valueOf(code)) {
+                    return pf;
+                }
+            }
+
             return null;
+        }
+
+        private AccidentSeverity findAccidentSeverity(String code) {
+            List<?> entities = staticData.get(AccidentSeverity.class.getName());
+            for (Object o : entities) {
+                AccidentSeverity e = (AccidentSeverity) o;
+                if (e.getCode() == Integer.valueOf(code)) {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        private DistrictAuthority findDistrictAuthority(String code) {
+            List<?> entities = staticData.get(DistrictAuthority.class.getName());
+            for (Object o : entities) {
+                DistrictAuthority e = (DistrictAuthority) o;
+                if (e.getCode() == Integer.valueOf(code)) {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        private LightCondition findLightCondition(String code) {
+            List<?> entities = staticData.get(LightCondition.class.getName());
+            for (Object o : entities) {
+                LightCondition e = (LightCondition) o;
+                if (e.getCode() == Integer.valueOf(code)) {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        private WeatherCondition findWeatherCondition(String code) {
+            List<?> entities = staticData.get(WeatherCondition.class.getName());
+            for (Object o : entities) {
+                WeatherCondition e = (WeatherCondition) o;
+                if (e.getCode() == Integer.valueOf(code)) {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        private RoadSurface findRoadSurface(String code) {
+            List<?> entities = staticData.get(RoadSurface.class.getName());
+            for (Object o : entities) {
+                RoadSurface e = (RoadSurface) o;
+                if (e.getCode() == Integer.valueOf(code)) {
+                    return e;
+                }
+            }
+
+            return null;
+        }
+
+        private RoadAccident processRoadAccidentVo(RoadAccidentVo vo) {
+            RoadAccident ra = null;
+            try {
+                ra = new RoadAccidentBuilder(vo.getAccidentIndex())
+                        .setLongitude(Double.valueOf(vo.getLongitude()))
+                        .setLatitude(Double.valueOf(vo.getLatitude()))
+                        .setDayOfWeek(Integer.valueOf(vo.getDayOfWeek()))
+                        .setPoliceForce(findPoliceForce(vo.getPoliceForce()))
+                        .setAccidentSeverity(findAccidentSeverity(vo.getAccidentSeverity()))
+                        .setNumberOfVehicles(Integer.valueOf(vo.getNumberOfVehicles()))
+                        .setNumberOfCasualties(Integer.valueOf(vo.getNumberOfCasualties()))
+                        .setOccurOn(new SimpleDateFormat("dd/MM/yyyy").parse(vo.getOccurOn()))
+                        .setOccurAt(new SimpleDateFormat("HH:mm").parse(vo.getOccurAt()))
+                        .setDistrictAuthority(findDistrictAuthority(vo.getDistrictAuthority()))
+                        .setLightCondition(findLightCondition(vo.getLightCondition()))
+                        .setWeatherCondition(findWeatherCondition(vo.getWeatherCondition()))
+                        .setRoadSurface(findRoadSurface(vo.getRoadSurface()))
+                        .build();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            return ra;
         }
     }
 }

@@ -8,6 +8,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by gavin on 16-5-15.
@@ -26,6 +30,11 @@ public class DataLoadConfiguration {
         scanner.setLightCondition(new ClassPathResource("data/light_conditions.csv"));
         scanner.setPoliceForce(new ClassPathResource("data/police_force.csv"));
         scanner.setRoadSurface(new ClassPathResource("data/road_surface.csv"));
+
+        List<Resource> roadAccidentResources = new ArrayList<Resource>();
+        roadAccidentResources.add(new ClassPathResource("data/DfTRoadSafety_Accidents_2009.csv"));
+
+        scanner.setRoadAccidents(roadAccidentResources);
 
         return scanner;
     }
