@@ -50,25 +50,29 @@ public class RoadAccidentDataLoader {
         return roadAccidentVosToPut;
     }
 
+
     public void load() {
         loadStaticData();
         loadRoadAccidentData();
     }
 
     protected void loadStaticData() {
-        log.debug("Start to clear static data.");
-        clearStaticData();
-        log.debug("End for clearing static data.");
+        log.debug("Start to clear data.");
+        clearData();
+        log.debug("End for clearing data.");
 
         log.info("Start to load static data.");
         doLoadStaticData();
         log.info("End up loading static data.");
     }
 
-    protected void clearStaticData() {
+    protected void clearData(){
         clearRoadAccidents();
-        dataLoadService.clearStaticData();
+        clearStaticData();
+    }
 
+    protected void clearStaticData() {
+        dataLoadService.clearStaticData();
     }
 
     protected void doLoadStaticData() {
@@ -316,11 +320,15 @@ public class RoadAccidentDataLoader {
                 Iterable<CSVRecord> records = new CSVParser(reader, CSVFormat.EXCEL.withHeader());
                 for (CSVRecord record : records) {
                     RoadAccidentVo vo = parseOneRecord(record);
-                    this.toStore.put(vo);
+                    this.toStore.offer(vo, 10, TimeUnit.SECONDS);
                     //log.debug("store :" + vo.toString());
                     result++;
                     if(result % 1000 == 0){
                         log.debug(String.format("Have already read %s from %s at %s", ""+result, resource.getURI().toString(), new Date().toString()));
+                    }
+
+                    if(result >= 3000){
+                        break;
                     }
                 }
             } catch (IOException | InterruptedException e) {
@@ -388,7 +396,7 @@ public class RoadAccidentDataLoader {
 
             long count = 0L;
             RoadAccidentVo vo = null;
-            while ((vo = toStore.poll(100L, TimeUnit.SECONDS)) != null) {
+            while ((vo = toStore.poll(10L, TimeUnit.SECONDS)) != null) {
                 count++;
                 RoadAccident ra = processRoadAccidentVo(vo);
                 service.addRoadAccident(ra);
