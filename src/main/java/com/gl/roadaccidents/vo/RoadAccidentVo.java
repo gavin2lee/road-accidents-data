@@ -95,4 +95,24 @@ public class RoadAccidentVo {
     public String getRoadSurface() {
         return roadSurface;
     }
+
+    @Override
+    public String toString() {
+        return "RoadAccidentVo{" +
+                "accidentIndex='" + accidentIndex + '\'' +
+                ", longitude='" + longitude + '\'' +
+                ", latitude='" + latitude + '\'' +
+                ", policeForce='" + policeForce + '\'' +
+                ", accidentSeverity='" + accidentSeverity + '\'' +
+                ", numberOfVehicles='" + numberOfVehicles + '\'' +
+                ", numberOfCasualties='" + numberOfCasualties + '\'' +
+                ", occurOn='" + occurOn + '\'' +
+                ", dayOfWeek='" + dayOfWeek + '\'' +
+                ", occurAt='" + occurAt + '\'' +
+                ", districtAuthority='" + districtAuthority + '\'' +
+                ", lightCondition='" + lightCondition + '\'' +
+                ", weatherCondition='" + weatherCondition + '\'' +
+                ", roadSurface='" + roadSurface + '\'' +
+                '}';
+    }
 }

@@ -74,7 +74,7 @@ public class RoadAccidentDataLoader {
         log.info("End up loading static data.");
     }
 
-    protected void clearData(){
+    protected void clearData() {
         clearRoadAccidents();
         clearStaticData();
     }
@@ -339,11 +339,11 @@ public class RoadAccidentDataLoader {
                     this.toStore.offer(vo, 10, TimeUnit.SECONDS);
                     //log.debug("store :" + vo.toString());
                     result++;
-                    if(result % 100 == 0){
-                        log.debug(String.format("Have already read %s from %s at %s", ""+result, resource.getURI().toString(), new Date().toString()));
+                    if (result % 100 == 0) {
+                        log.debug(String.format("Have already read %s from %s at %s", "" + result, resource.getURI().toString(), new Date().toString()));
                     }
 
-                    if(midStop && (result >= 3000) ){
+                    if (midStop && (result >= 3000)) {
                         break;
                     }
                 }
@@ -393,7 +393,7 @@ public class RoadAccidentDataLoader {
 
         private static final Logger log = LoggerFactory.getLogger(RoadAccidentDataPutter.class);
 
-        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service,ExecutorService pool) {
+        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service, ExecutorService pool) {
             this.toStore = toStore;
             this.service = service;
             this.pool = pool;
@@ -415,21 +415,21 @@ public class RoadAccidentDataLoader {
             long count = 0L;
             RoadAccidentVo vo = toStore.poll(10L, TimeUnit.SECONDS);
 
-            while(true){
-                if(vo == null){
+            while (true) {
+                if (vo == null) {
                     log.warn("No object polled from queue. Try to exit.");
-                    if(pool != null){
+                    if (pool != null) {
                         pool.shutdown();
                     }
 
                     break;
-                }else{
+                } else {
                     count++;
                     RoadAccident ra = processRoadAccidentVo(vo);
                     service.addRoadAccident(ra);
 
-                    if(count % 100 == 0){
-                        log.debug(String.format("Have already put %s to %s at %s", ""+count, "road_accident", new Date().toString()));
+                    if (count % 100 == 0) {
+                        log.debug(String.format("Have already put %s to %s at %s", "" + count, "road_accident", new Date().toString()));
                     }
 
                     vo = toStore.poll(10L, TimeUnit.SECONDS);
@@ -534,26 +534,39 @@ public class RoadAccidentDataLoader {
         }
 
         private RoadAccident processRoadAccidentVo(RoadAccidentVo vo) {
-            RoadAccident ra = null;
+            Date occurOn;
+            Date occurAt;
+
             try {
-                ra = new RoadAccidentBuilder(vo.getAccidentIndex())
-                        .setLongitude(Double.valueOf(vo.getLongitude()))
-                        .setLatitude(Double.valueOf(vo.getLatitude()))
-                        .setDayOfWeek(Integer.valueOf(vo.getDayOfWeek()))
-                        .setPoliceForce(findPoliceForce(vo.getPoliceForce()))
-                        .setAccidentSeverity(findAccidentSeverity(vo.getAccidentSeverity()))
-                        .setNumberOfVehicles(Integer.valueOf(vo.getNumberOfVehicles()))
-                        .setNumberOfCasualties(Integer.valueOf(vo.getNumberOfCasualties()))
-                        .setOccurOn(new SimpleDateFormat("dd/MM/yyyy").parse(vo.getOccurOn()))
-                        .setOccurAt(new SimpleDateFormat("HH:mm").parse(vo.getOccurAt()))
-                        .setDistrictAuthority(findDistrictAuthority(vo.getDistrictAuthority()))
-                        .setLightCondition(findLightCondition(vo.getLightCondition()))
-                        .setWeatherCondition(findWeatherCondition(vo.getWeatherCondition()))
-                        .setRoadSurface(findRoadSurface(vo.getRoadSurface()))
-                        .build();
+                occurOn = new SimpleDateFormat("dd/MM/yyyy").parse(vo.getOccurOn());
+
             } catch (ParseException e) {
-                throw new RuntimeException(e);
+                log.warn("Malformed date : " + vo.getOccurOn(), e);
+                occurOn = null;
             }
+
+            try {
+                occurAt = new SimpleDateFormat("HH:mm").parse(vo.getOccurAt());
+            } catch (ParseException e) {
+                log.warn("Malformed time: " + vo.getOccurAt(), e);
+                occurAt = null;
+            }
+            RoadAccident ra = new RoadAccidentBuilder(vo.getAccidentIndex())
+                    .setLongitude(Double.valueOf(vo.getLongitude()))
+                    .setLatitude(Double.valueOf(vo.getLatitude()))
+                    .setDayOfWeek(Integer.valueOf(vo.getDayOfWeek()))
+                    .setPoliceForce(findPoliceForce(vo.getPoliceForce()))
+                    .setAccidentSeverity(findAccidentSeverity(vo.getAccidentSeverity()))
+                    .setNumberOfVehicles(Integer.valueOf(vo.getNumberOfVehicles()))
+                    .setNumberOfCasualties(Integer.valueOf(vo.getNumberOfCasualties()))
+                    .setOccurOn(occurOn)
+                    .setOccurAt(occurAt)
+                    .setDistrictAuthority(findDistrictAuthority(vo.getDistrictAuthority()))
+                    .setLightCondition(findLightCondition(vo.getLightCondition()))
+                    .setWeatherCondition(findWeatherCondition(vo.getWeatherCondition()))
+                    .setRoadSurface(findRoadSurface(vo.getRoadSurface()))
+                    .build();
+
             return ra;
         }
     }
