@@ -56,6 +56,14 @@ public class RoadAccidentDataLoader {
         loadRoadAccidentData();
     }
 
+    protected DataLoadService getDataLoadService() {
+        return dataLoadService;
+    }
+
+    protected RoadAccidentDataResourceScanner getScanner() {
+        return scanner;
+    }
+
     protected void loadStaticData() {
         log.debug("Start to clear data.");
         clearData();
@@ -277,9 +285,16 @@ public class RoadAccidentDataLoader {
         }
     }
 
-    private void doLoadRoadAccidentData() {
-        FutureTask<Long> reader = new FutureTask<Long>(new RoadAccidentCvsResourceReader(scanner.findRoadAccidentDataResources(), this.getRoadAccidentVosToPut()));
-        FutureTask<Long> putter = new FutureTask<Long>(new RoadAccidentDataPutter(getRoadAccidentVosToPut(), this.dataLoadService));
+    protected void doLoadRoadAccidentData() {
+        FutureTask<Long> reader = new FutureTask<Long>(
+                new RoadAccidentCvsResourceReader(
+                        scanner.findRoadAccidentDataResources(),
+                        this.getRoadAccidentVosToPut()
+                )
+        );
+        FutureTask<Long> putter = new FutureTask<Long>(
+                new RoadAccidentDataPutter(getRoadAccidentVosToPut(), this.dataLoadService, null)
+        );
 
         new Thread(reader).start();
         new Thread(putter).start();
@@ -314,6 +329,7 @@ public class RoadAccidentDataLoader {
 
         private Long processOneResource(Resource resource) {
             long result = 0L;
+            boolean midStop = "true".equalsIgnoreCase(System.getProperty("midStop"));
             Reader reader = null;
             try {
                 reader = new InputStreamReader(resource.getInputStream());
@@ -323,11 +339,11 @@ public class RoadAccidentDataLoader {
                     this.toStore.offer(vo, 10, TimeUnit.SECONDS);
                     //log.debug("store :" + vo.toString());
                     result++;
-                    if(result % 1000 == 0){
+                    if(result % 100 == 0){
                         log.debug(String.format("Have already read %s from %s at %s", ""+result, resource.getURI().toString(), new Date().toString()));
                     }
 
-                    if(result >= 3000){
+                    if(midStop && (result >= 3000) ){
                         break;
                     }
                 }
@@ -369,16 +385,18 @@ public class RoadAccidentDataLoader {
         private BlockingQueue<RoadAccidentVo> toStore;
         private DataLoadService service;
 
+        private ExecutorService pool;
+
         private Map<String, List<?>> staticData;
 
         private ReentrantLock lock = new ReentrantLock();
 
         private static final Logger log = LoggerFactory.getLogger(RoadAccidentDataPutter.class);
 
-        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service) {
+        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service,ExecutorService pool) {
             this.toStore = toStore;
             this.service = service;
-
+            this.pool = pool;
         }
 
         @Override
@@ -395,20 +413,50 @@ public class RoadAccidentDataLoader {
             }
 
             long count = 0L;
-            RoadAccidentVo vo = null;
-            while ((vo = toStore.poll(10L, TimeUnit.SECONDS)) != null) {
-                count++;
-                RoadAccident ra = processRoadAccidentVo(vo);
-                service.addRoadAccident(ra);
+            RoadAccidentVo vo = toStore.poll(10L, TimeUnit.SECONDS);
 
-                if(count % 1000 == 0){
-                    log.debug(String.format("Have already put %s to %s at %s", ""+count, "road_accident", new Date().toString()));
+            while(true){
+                if(vo == null){
+                    log.warn("No object polled from queue. Try to exit.");
+                    if(pool != null){
+                        pool.shutdown();
+                    }
+
+                    break;
+                }else{
+                    count++;
+                    RoadAccident ra = processRoadAccidentVo(vo);
+                    service.addRoadAccident(ra);
+
+                    if(count % 100 == 0){
+                        log.debug(String.format("Have already put %s to %s at %s", ""+count, "road_accident", new Date().toString()));
+                    }
+
+                    vo = toStore.poll(10L, TimeUnit.SECONDS);
                 }
             }
 
-            log.info(String.format("Put %l records into database.", count));
+//            while ((vo = toStore.poll(10L, TimeUnit.SECONDS)) != null) {
+//                count++;
+//                RoadAccident ra = processRoadAccidentVo(vo);
+//                service.addRoadAccident(ra);
+//
+//                if(count % 1000 == 0){
+//                    log.debug(String.format("Have already put %s to %s at %s", ""+count, "road_accident", new Date().toString()));
+//                }
+//            }
+
+            System.out.println("*******************  Finished ************************");
+
+            log.info(String.format("Put %s records into database.", count));
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>   Putting finished <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             log.info(new Date().toString());
+
+//            Thread.currentThread().sleep(1000);
+
+//            if(pool != null){
+//                pool.shutdown();
+//            }
 
             return count;
         }

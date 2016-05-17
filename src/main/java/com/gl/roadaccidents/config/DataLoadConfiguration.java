@@ -2,6 +2,7 @@ package com.gl.roadaccidents.config;
 
 import com.gl.roadaccidents.service.ConfigurableRoadAccidentDataResourceScanner;
 import com.gl.roadaccidents.service.RoadAccidentDataResourceScanner;
+import com.gl.roadaccidents.util.loader.ExecutorFeaturedRoadAccidentDataLoader;
 import com.gl.roadaccidents.util.loader.RoadAccidentDataLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -41,7 +42,7 @@ public class DataLoadConfiguration {
 
     @Bean
     public RoadAccidentDataLoader getRoadAccidentDataLoader(){
-        RoadAccidentDataLoader loader = new RoadAccidentDataLoader();
+        RoadAccidentDataLoader loader = new ExecutorFeaturedRoadAccidentDataLoader();
         return loader;
     }
 }
