@@ -25,4 +25,7 @@ public interface AccidentSeverityRepository {
     )
     @Select("SELECT * FROM accident_severity")
     List<AccidentSeverity> findAll();
+
+    AccidentSeverity findById(Long id);
+    AccidentSeverity findByCode(Integer code);
 }
