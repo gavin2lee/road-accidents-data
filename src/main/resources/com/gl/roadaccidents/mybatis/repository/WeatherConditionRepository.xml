@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gl.roadaccidents.mybatis.repository.WeatherConditionRepository">
+
+    <resultMap type="WeatherCondition" id="weatherConditionMap">
+        <id column="oid" property="oid"/>
+        <result column="create_at" property="createAt"/>
+        <result column="update_at" property="updateAt"/>
+        <result column="code" property="code"/>
+        <result column="label" property="label"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="weatherConditionMap">
+        SELECT * FROM weather_condition
+    </select>
+
+    <select id="findById" resultMap="weatherConditionMap" parameterType="long">
+        SELECT * FROM weather_condition WHERE oid = #{id}
+    </select>
+
+    <select id="findByCode" resultMap="weatherConditionMap" parameterType="int">
+        SELECT * FROM weather_condition WHERE code = #{code}
+    </select>
+
+    <insert id="saveOne" parameterType="WeatherCondition">
+        INSERT INTO weather_condition (oid,create_at,update_at,code,label)
+        VALUES(
+            #{oid},
+            #{createAt},
+            #{updateAt},
+            #{code},
+            #{label}
+        )
+    </insert>
+
+</mapper>

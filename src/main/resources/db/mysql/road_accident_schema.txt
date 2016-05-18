@@ -1,0 +1,2 @@
+--export the schemas of full database --
+mysqldump -u root -p -d --add-drop-table roadaccidents >~/Dev/road-accidents-schema.sql
