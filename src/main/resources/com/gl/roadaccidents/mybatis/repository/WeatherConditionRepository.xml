@@ -12,10 +12,6 @@
         <result column="label" property="label"/>
     </resultMap>
 
-    <select id="findAll" resultMap="weatherConditionMap">
-        SELECT * FROM weather_condition
-    </select>
-
     <select id="findById" resultMap="weatherConditionMap" parameterType="long">
         SELECT * FROM weather_condition WHERE oid = #{id}
     </select>
@@ -24,7 +20,7 @@
         SELECT * FROM weather_condition WHERE code = #{code}
     </select>
 
-    <insert id="saveOne" parameterType="WeatherCondition">
+    <insert id="insertOne" parameterType="WeatherCondition">
         INSERT INTO weather_condition (oid,create_at,update_at,code,label)
         VALUES(
             #{oid},

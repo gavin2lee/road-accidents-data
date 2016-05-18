@@ -24,31 +24,31 @@ public class ExecutorFeaturedRoadAccidentDataLoader extends RoadAccidentDataLoad
 
         RoadAccidentDataPutter putterOne = new RoadAccidentDataPutter(
                 getRoadAccidentVosToPut(),
-                this.getDataLoadService(),
+                this.getJpaDataLoadService(),
                 pool
         );
 
         RoadAccidentDataPutter putterTwo = new RoadAccidentDataPutter(
                 getRoadAccidentVosToPut(),
-                this.getDataLoadService(),
+                this.getJpaDataLoadService(),
                 pool
         );
 
         RoadAccidentDataPutter putterThree = new RoadAccidentDataPutter(
                 getRoadAccidentVosToPut(),
-                this.getDataLoadService(),
+                this.getJpaDataLoadService(),
                 pool
         );
 
         RoadAccidentDataPutter putterFour = new RoadAccidentDataPutter(
                 getRoadAccidentVosToPut(),
-                this.getDataLoadService(),
+                this.getJpaDataLoadService(),
                 pool
         );
 
         RoadAccidentDataPutter putterFive = new RoadAccidentDataPutter(
                 getRoadAccidentVosToPut(),
-                this.getDataLoadService(),
+                this.getJpaDataLoadService(),
                 pool
         );
 

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gl.roadaccidents.mybatis.repository.RoadAccidentRepository">
+
+    <resultMap type="RoadSurface" id="RoadSurfaceResults">
+        <id column="rs_oid" property="oid"/>
+        <result column="rs_create_at" property="createAt"/>
+        <result column="rs_update_at" property="updateAt"/>
+        <result column="rs_code" property="code"/>
+        <result column="rs_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="WeatherCondition" id="WeatherConditionResults">
+        <id column="wc_oid" property="oid"/>
+        <result column="wc_create_at" property="createAt"/>
+        <result column="wc_update_at" property="updateAt"/>
+        <result column="wc_code" property="code"/>
+        <result column="wc_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="LightCondition" id="LightConditionResults">
+        <id column="lc_oid" property="oid"/>
+        <result column="lc_create_at" property="createAt"/>
+        <result column="lc_update_at" property="updateAt"/>
+        <result column="lc_code" property="code"/>
+        <result column="lc_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="AccidentSeverity" id="AccidentSeverityResults">
+        <id column="as_oid" property="oid"/>
+        <result column="as_create_at" property="createAt"/>
+        <result column="as_update_at" property="updateAt"/>
+        <result column="as_code" property="code"/>
+        <result column="as_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="DistrictAuthority" id="DistrictAuthorityResults">
+        <id column="da_oid" property="oid"/>
+        <result column="da_create_at" property="createAt"/>
+        <result column="da_update_at" property="updateAt"/>
+        <result column="da_code" property="code"/>
+        <result column="da_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="PoliceForce" id="PoliceForceResults">
+        <id column="pf_oid" property="oid"/>
+        <result column="pf_create_at" property="createAt"/>
+        <result column="pf_update_at" property="updateAt"/>
+        <result column="pf_code" property="code"/>
+        <result column="pf_label" property="label"/>
+
+    </resultMap>
+
+    <resultMap type="RoadAccident" id="RoadAccidentResults">
+        <id column="ra_oid" property="oid"/>
+        <result column="ra_create_at" property="createAt"/>
+        <result column="ra_update_at" property="updateAt"/>
+        <result column="accident_index" property="accidentIndex"/>
+        <result column="longitude" property="longitude"/>
+        <result column="latitude" property="latitude"/>
+        <result column="number_of_vehicles" property="numberOfVehicles"/>
+        <result column="number_of_calsualties" property="numberOfCasualties"/>
+        <result column="occur_on" property="occurOn"/>
+        <result column="day_of_week" property="dayOfWeek"/>
+        <result column="occur_at" property="occurAt"/>
+        <association property="policeForce"        resultMap="PoliceForceResults"/>
+        <association property="districtAuthority"  resultMap="DistrictAuthorityResults"/>
+        <association property="accidentSeverity"   resultMap="AccidentSeverityResults"/>
+        <association property="lightCondition"     resultMap="LightConditionResults"/>
+        <association property="weatherCondition"   resultMap="WeatherConditionResults"/>
+        <association property="roadSurface"        resultMap="RoadSurfaceResults"/>
+
+    </resultMap>
+
+    <select id="findById" resultMap="RoadAccidentResults" parameterType="long">
+    SELECT
+        ra.oid AS ra_oid,
+        ra.create_at AS ra_create_at,
+        ra.update_at AS ra_update_at,
+        ra.accident_index,
+        ra.longitude,
+        ra.latitude,
+        ra.number_of_vehicles,
+        ra.number_of_calsualties,
+        ra.occur_on,
+        ra.day_of_week,
+        ra.occur_at,
+        ra.road_surface,
+
+        wc.oid AS wc_oid,
+        wc.create_at AS wc_create_at,
+        wc.update_at AS wc_update_at,
+        wc.code AS wc_code,
+        wc.label AS wc_label,
+
+        pf.oid AS pf_oid,
+        pf.create_at AS pf_create_at,
+        pf.update_at AS pf_update_at,
+        pf.code AS pf_code,
+        pf.label AS pf_label,
+
+        da.oid AS da_oid,
+        da.create_at AS da_create_at,
+        da.update_at AS da_update_at,
+        da.code AS da_code,
+        da.label AS da_label,
+
+        s.oid AS as_oid,
+        s.create_at AS as_create_at,
+        s.update_at AS as_update_at,
+        s.code AS as_code,
+        s.label AS as_label,
+
+        lc.oid AS lc_oid,
+        lc.create_at AS lc_create_at,
+        lc.update_at AS lc_update_at,
+        lc.code AS lc_code,
+        lc.label AS lc_label,
+
+        rs.oid AS rs_oid,
+        rs.create_at AS rs_create_at,
+        rs.update_at AS rs_update_at,
+        rs.code AS rs_code,
+        rs.label AS rs_label
+
+    FROM
+            road_accident ra
+        LEFT JOIN weather_condition wc ON ra.weather_condition = wc.oid
+        LEFT JOIN police_force pf ON ra.police_force = pf.oid
+        LEFT JOIN district_authority da ON ra.district_authority = da.oid
+        LEFT JOIN accident_severity s ON ra.accident_severity = s.oid
+        LEFT JOIN light_condition lc ON ra.light_condition = lc.oid
+        LEFT JOIN road_surface rs ON ra.road_surface = rs.oid
+    WHERE ra.oid = #{id}
+    </select>
+
+    <select id="findAll" resultMap="RoadAccidentResults">
+        SELECT
+        ra.oid AS ra_oid,
+        ra.create_at AS ra_create_at,
+        ra.update_at AS ra_update_at,
+        ra.accident_index,
+        ra.longitude,
+        ra.latitude,
+        ra.number_of_vehicles,
+        ra.number_of_calsualties,
+        ra.occur_on,
+        ra.day_of_week,
+        ra.occur_at,
+        ra.road_surface,
+
+        wc.oid AS wc_oid,
+        wc.create_at AS wc_create_at,
+        wc.update_at AS wc_update_at,
+        wc.code AS wc_code,
+        wc.label AS wc_label,
+
+        pf.oid AS pf_oid,
+        pf.create_at AS pf_create_at,
+        pf.update_at AS pf_update_at,
+        pf.code AS pf_code,
+        pf.label AS pf_label,
+
+        da.oid AS da_oid,
+        da.create_at AS da_create_at,
+        da.update_at AS da_update_at,
+        da.code AS da_code,
+        da.label AS da_label,
+
+        s.oid AS as_oid,
+        s.create_at AS as_create_at,
+        s.update_at AS as_update_at,
+        s.code AS as_code,
+        s.label AS as_label,
+
+        lc.oid AS lc_oid,
+        lc.create_at AS lc_create_at,
+        lc.update_at AS lc_update_at,
+        lc.code AS lc_code,
+        lc.label AS lc_label,
+
+        rs.oid AS rs_oid,
+        rs.create_at AS rs_create_at,
+        rs.update_at AS rs_update_at,
+        rs.code AS rs_code,
+        rs.label AS rs_label
+
+        FROM
+        road_accident ra
+        LEFT JOIN weather_condition wc ON ra.weather_condition = wc.oid
+        LEFT JOIN police_force pf ON ra.police_force = pf.oid
+        LEFT JOIN district_authority da ON ra.district_authority = da.oid
+        LEFT JOIN accident_severity s ON ra.accident_severity = s.oid
+        LEFT JOIN light_condition lc ON ra.light_condition = lc.oid
+        LEFT JOIN road_surface rs ON ra.road_surface = rs.oid
+        ORDER BY ra.oid DESC
+        LIMIT 100
+    </select>
+
+    <insert id="insertOne" parameterType="RoadAccident">
+        INSERT INTO road_accident (
+            oid,
+            create_at,
+            update_at,
+            accident_index,
+            longitude,
+            latitude,
+            number_of_vehicles,
+            number_of_calsualties,
+            occur_on,
+            day_of_week,
+            occur_at,
+            police_force,
+            district_authority,
+            accident_severity,
+            light_condition,
+            weather_condition,
+            road_surface
+        )
+        VALUES(
+            #{oid},
+            #{createAt},
+            #{updateAt},
+            #{accidentIndex},
+            #{longitude},
+            #{latitude},
+            #{numberOfVehicles},
+            #{numberOfCasualties},
+            #{occurOn},
+            #{dayOfWeek},
+            #{occurAt},
+            #{policeForce.oid},
+            #{districtAuthority.oid},
+            #{accidentSeverity.oid},
+            #{lightCondition.oid},
+            #{weatherCondition.oid},
+            #{roadSurface.oid}
+        )
+    </insert>
+
+    <insert id="insertInBatch" parameterType="java.util.List">
+        INSERT INTO road_accident (
+        oid,
+        create_at,
+        update_at,
+        accident_index,
+        longitude,
+        latitude,
+        number_of_vehicles,
+        number_of_calsualties,
+        occur_on,
+        day_of_week,
+        occur_at,
+        police_force,
+        district_authority,
+        accident_severity,
+        light_condition,
+        weather_condition,
+        road_surface
+        )
+        VALUES
+        <foreach item="item" collection="list" separator=",">
+            (
+            #{item.oid},
+            #{item.createAt},
+            #{item.updateAt},
+            #{item.accidentIndex},
+            #{item.longitude},
+            #{item.latitude},
+            #{item.numberOfVehicles},
+            #{item.numberOfCasualties},
+            #{item.occurOn},
+            #{item.dayOfWeek},
+            #{item.occurAt},
+            #{item.policeForce.oid},
+            #{item.districtAuthority.oid},
+            #{item.accidentSeverity.oid},
+            #{item.lightCondition.oid},
+            #{item.weatherCondition.oid},
+            #{item.roadSurface.oid}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

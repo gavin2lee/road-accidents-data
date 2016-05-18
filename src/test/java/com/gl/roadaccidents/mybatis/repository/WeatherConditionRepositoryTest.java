@@ -1,6 +1,6 @@
 package com.gl.roadaccidents.mybatis.repository;
 
-import com.gl.roadaccidents.model.AccidentSeverity;
+import com.gl.roadaccidents.model.WeatherCondition;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,21 +14,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 /**
- * Created by gavin on 16-5-18.
+ * Created by gavin on 16-5-18.com.gl.roadaccidents.mybatis.repository
  */
 @ContextConfiguration(locations = {"classpath:mybatis/repository-mybatis.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
 @Rollback(false)
-public class AccidentSeverityRepositoryWithMybatisTest{
+public class WeatherConditionRepositoryTest {
     @Autowired
-    AccidentSeverityRepository repo;
+    WeatherConditionRepository repo;
 
     @Before
     public void setUp() throws Exception {
@@ -40,29 +39,33 @@ public class AccidentSeverityRepositoryWithMybatisTest{
 
     @Test
     public void testInsertOne(){
-        AccidentSeverity as = new AccidentSeverity();
-        as.setCreateAt(new Date());
-        as.setUpdateAt(new Date());
-        as.setCode(1000);
-        as.setLabel("my-batis");
+        WeatherCondition w = new WeatherCondition();
+        w.setOid(100L);
+        w.setCode(100001);
+        w.setLabel("test-mybatis");
 
-        repo.insertOne(as);
+        w.setCreateAt(new Date());
+        w.setUpdateAt(new Date());
+
+        repo.insertOne(w);
+
     }
 
     @Test
     public void testFindAll(){
-        AccidentSeverity as = new AccidentSeverity();
-        as.setCreateAt(new Date());
-        as.setUpdateAt(new Date());
-        as.setCode(1000);
-        as.setLabel("my-batis");
+        WeatherCondition w = new WeatherCondition();
+        w.setOid(100L);
+        w.setCode(100001);
+        w.setLabel("test-mybatis");
 
-        repo.insertOne(as);
+        w.setCreateAt(new Date());
+        w.setUpdateAt(new Date());
 
-        List<AccidentSeverity> accidentSeverities = repo.findAll();
-        assertThat(accidentSeverities, notNullValue());
-        assertThat(accidentSeverities.size(), greaterThan(0));
+        repo.insertOne(w);
 
+        List<WeatherCondition> weatherConditionList = repo.findAll();
 
+        assertThat(weatherConditionList, notNullValue());
+        assertThat(weatherConditionList.size(), greaterThan(0));
     }
 }

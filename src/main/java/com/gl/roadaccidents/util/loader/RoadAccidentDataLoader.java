@@ -2,7 +2,7 @@ package com.gl.roadaccidents.util.loader;
 
 import com.gl.roadaccidents.builder.RoadAccidentBuilder;
 import com.gl.roadaccidents.model.*;
-import com.gl.roadaccidents.service.DataLoadService;
+import com.gl.roadaccidents.service.JpaDataLoadService;
 import com.gl.roadaccidents.service.RoadAccidentDataResourceScanner;
 import com.gl.roadaccidents.vo.RoadAccidentVo;
 import com.gl.roadaccidents.vo.RoadAccidentVoBuilder;
@@ -20,9 +20,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +35,7 @@ public class RoadAccidentDataLoader {
     public static final String KEY_CLEAR_ROAD_ACCIDENTS = "clearData";
 
     @Autowired
-    private DataLoadService dataLoadService;
+    private JpaDataLoadService jpaDataLoadService;
 
     @Autowired
     @Qualifier("dataSourceScanner")
@@ -56,8 +53,8 @@ public class RoadAccidentDataLoader {
         loadRoadAccidentData();
     }
 
-    protected DataLoadService getDataLoadService() {
-        return dataLoadService;
+    protected JpaDataLoadService getJpaDataLoadService() {
+        return jpaDataLoadService;
     }
 
     protected RoadAccidentDataResourceScanner getScanner() {
@@ -80,7 +77,7 @@ public class RoadAccidentDataLoader {
     }
 
     protected void clearStaticData() {
-        dataLoadService.clearStaticData();
+        jpaDataLoadService.clearStaticData();
     }
 
     protected void doLoadStaticData() {
@@ -107,7 +104,7 @@ public class RoadAccidentDataLoader {
                 entity.setLabel(label);
 
 
-                dataLoadService.addDistrictAuthority(entity);
+                jpaDataLoadService.addDistrictAuthority(entity);
 
             }
         } catch (IOException e) {
@@ -137,7 +134,7 @@ public class RoadAccidentDataLoader {
                 entity.setLabel(label);
 
 
-                dataLoadService.addRoadSurface(entity);
+                jpaDataLoadService.addRoadSurface(entity);
 
             }
         } catch (IOException e) {
@@ -167,7 +164,7 @@ public class RoadAccidentDataLoader {
                 entity.setLabel(label);
 
 
-                dataLoadService.addPoliceForce(entity);
+                jpaDataLoadService.addPoliceForce(entity);
 
             }
         } catch (IOException e) {
@@ -197,7 +194,7 @@ public class RoadAccidentDataLoader {
                 entity.setLabel(label);
 
 
-                dataLoadService.addLightCondition(entity);
+                jpaDataLoadService.addLightCondition(entity);
 
             }
         } catch (IOException e) {
@@ -227,7 +224,7 @@ public class RoadAccidentDataLoader {
                 entity.setLabel(label);
 
 
-                dataLoadService.addAccidentSeverity(entity);
+                jpaDataLoadService.addAccidentSeverity(entity);
 
             }
         } catch (IOException e) {
@@ -258,7 +255,7 @@ public class RoadAccidentDataLoader {
 
                 entity.setCreateAt(new Date());
 
-                dataLoadService.addWeatherCondition(entity);
+                jpaDataLoadService.addWeatherCondition(entity);
 
             }
         } catch (IOException e) {
@@ -281,7 +278,7 @@ public class RoadAccidentDataLoader {
         String clearData = System.getProperty(KEY_CLEAR_ROAD_ACCIDENTS);
         boolean hasToClearRoadAccidentData = Boolean.valueOf(clearData);
         if (hasToClearRoadAccidentData) {
-            dataLoadService.clearRoadAccident();
+            jpaDataLoadService.clearRoadAccident();
         }
     }
 
@@ -293,7 +290,7 @@ public class RoadAccidentDataLoader {
                 )
         );
         FutureTask<Long> putter = new FutureTask<Long>(
-                new RoadAccidentDataPutter(getRoadAccidentVosToPut(), this.dataLoadService, null)
+                new RoadAccidentDataPutter(getRoadAccidentVosToPut(), this.jpaDataLoadService, null)
         );
 
         new Thread(reader).start();
@@ -383,7 +380,7 @@ public class RoadAccidentDataLoader {
 
     public static class RoadAccidentDataPutter implements Callable<Long> {
         private BlockingQueue<RoadAccidentVo> toStore;
-        private DataLoadService service;
+        private JpaDataLoadService service;
 
         private ExecutorService pool;
 
@@ -393,7 +390,7 @@ public class RoadAccidentDataLoader {
 
         private static final Logger log = LoggerFactory.getLogger(RoadAccidentDataPutter.class);
 
-        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, DataLoadService service, ExecutorService pool) {
+        public RoadAccidentDataPutter(BlockingQueue<RoadAccidentVo> toStore, JpaDataLoadService service, ExecutorService pool) {
             this.toStore = toStore;
             this.service = service;
             this.pool = pool;
@@ -551,7 +548,7 @@ public class RoadAccidentDataLoader {
                 log.warn("Malformed time: " + vo.getOccurAt(), e);
                 occurAt = null;
             }
-            RoadAccident ra = new RoadAccidentBuilder(vo.getAccidentIndex())
+            RoadAccident ra = RoadAccidentBuilder.newBuilder().setAccidentIndex(vo.getAccidentIndex())
                     .setLongitude(Double.valueOf(vo.getLongitude()))
                     .setLatitude(Double.valueOf(vo.getLatitude()))
                     .setDayOfWeek(Integer.valueOf(vo.getDayOfWeek()))

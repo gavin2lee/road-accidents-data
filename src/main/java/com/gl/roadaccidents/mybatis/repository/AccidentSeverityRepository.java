@@ -9,6 +9,8 @@ import java.util.List;
  * Created by gavin on 16-5-18.
  */
 public interface AccidentSeverityRepository {
+
+
     @Insert("INSERT INTO accident_severity " +
             "(oid,create_at,update_at,code,label)" +
             " VALUES " +
@@ -26,6 +28,9 @@ public interface AccidentSeverityRepository {
     @Select("SELECT * FROM accident_severity")
     List<AccidentSeverity> findAll();
 
-    AccidentSeverity findById(Long id);
-    AccidentSeverity findByCode(Integer code);
+    @Select("select * from accident_severity where oid = #{id}")
+    AccidentSeverity findById(@Param("id") Long id);
+
+    @Select("select * from accident_severity where code = #{code}")
+    AccidentSeverity findByCode(@Param("code") Integer code);
 }

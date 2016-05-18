@@ -31,6 +31,10 @@
     </appender>
      -->
     <!--指定logger name为包名或类全名 指定级别 additivity设置是否传递到root logger -->
+    <logger name="com.gl.roadaccidents.mybatis.repository" level="INFO" additivity="false">
+        <appender-ref ref="DebugDayFile"/>
+    </logger>
+
     <logger name="com.gl.roadaccidents" level="DEBUG" additivity="false">
         <appender-ref ref="DebugDayFile"/>
     </logger>
