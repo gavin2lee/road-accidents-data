@@ -27,6 +27,8 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
 
     public static final String KEY_BATCH_SIZE = "batchSize";
 
+    public static final String KEY_SIZE_TO_LOG_PUT = "sizeToLogPut";
+
     private BlockingQueue<RoadAccidentVo> toStore;
     private DataLoadService service;
 
@@ -63,6 +65,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
         long count = 0L;
 
         int batchSize = Integer.valueOf(System.getProperty(KEY_BATCH_SIZE, "100"));
+        int sizeToLog = Integer.valueOf(System.getProperty(KEY_SIZE_TO_LOG_PUT, "1000"));
         List<RoadAccident> batch = new ArrayList<>(batchSize);
 
         while(true){
@@ -87,7 +90,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
                     batch.clear();
                 }
 
-                if (count % 100 == 0) {
+                if (count % sizeToLog == 0) {
                     log.debug("Put {}", count);
                 }
             }
@@ -113,6 +116,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
     protected Long doSinglePut() throws  Exception{
         long count = 0L;
         RoadAccidentVo vo = toStore.poll(10L, TimeUnit.SECONDS);
+        int sizeToLog = Integer.valueOf(System.getProperty(KEY_SIZE_TO_LOG_PUT, "1000"));
 
         while (true) {
             if (vo == null) {
@@ -127,7 +131,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
                 RoadAccident ra = processRoadAccidentVo(vo);
                 service.addRoadAccident(ra);
 
-                if (count % 100 == 0) {
+                if (count % sizeToLog == 0) {
                     log.debug("Put {}", count);
                 }
 

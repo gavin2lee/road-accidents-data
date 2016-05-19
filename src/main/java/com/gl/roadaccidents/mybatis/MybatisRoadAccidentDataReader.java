@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MybatisRoadAccidentDataReader implements DataReader, Callable<Long>{
 
+
     @Override
     public Long read() throws Exception {
         long amountOfRecords = 0L;
@@ -50,6 +51,7 @@ public class MybatisRoadAccidentDataReader implements DataReader, Callable<Long>
 
     private Long processOneResource(Resource resource) {
         long result = 0L;
+        int sizeToLog = Integer.valueOf(System.getProperty(KEY_SIZE_TO_LOG_READ, "1000"));
         boolean midStop = "true".equalsIgnoreCase(System.getProperty("midStop"));
         Reader reader = null;
         try {
@@ -105,6 +107,8 @@ public class MybatisRoadAccidentDataReader implements DataReader, Callable<Long>
         this.toStore = toStore;
         this.resourcesToRead = resourcesToRead;
     }
+
+    public static final String KEY_SIZE_TO_LOG_READ = "sizeToLogRead";
 
     private static final Logger log = LoggerFactory.getLogger(MybatisRoadAccidentDataReader.class);
     private BlockingQueue<RoadAccidentVo> toStore;

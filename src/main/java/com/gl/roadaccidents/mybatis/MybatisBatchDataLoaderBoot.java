@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import static com.gl.roadaccidents.mybatis.MybatisRoadAccidentDataPutter.KEY_BATCH_SIZE;
 
 /**
  * Created by gavin on 16-5-15.
@@ -31,7 +30,11 @@ public class MybatisBatchDataLoaderBoot {
         System.setProperty(KEY_CLEAR_DATA, CLEAR_DATA);
         System.setProperty(KEY_MID_STOP, MID_STOP);
         System.setProperty(MybatisRoadAccidentDataLoader.KEY_SIZE_OF_PUTTER, SIZE_OF_PUTTER);
-        System.setProperty(KEY_BATCH_SIZE, BATCH_SIZE);
+
+        System.setProperty(MybatisRoadAccidentDataLoader.KEY_CAPACITY_OF_TO_PUT_QUEUE, "5000");
+        System.setProperty(MybatisRoadAccidentDataPutter.KEY_BATCH_SIZE, BATCH_SIZE);
+
+        System.setProperty(MybatisRoadAccidentDataReader.KEY_SIZE_TO_LOG_READ, "6000");
         try {
             AnnotationConfigApplicationContext ctx
                     = new AnnotationConfigApplicationContext(MybatisDataLoadConfiguration.class);

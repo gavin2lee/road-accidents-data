@@ -32,6 +32,8 @@ public class MybatisRoadAccidentDataLoader implements DataLoader {
 
     public static final String KEY_SIZE_OF_PUTTER = "putterSize";
 
+    public static final String KEY_CAPACITY_OF_TO_PUT_QUEUE = "capacityOfToPutQueue";
+
     public static final String DEFAULT_SIZE_OF_PUTTER = "6";
 
     @Autowired
@@ -44,7 +46,10 @@ public class MybatisRoadAccidentDataLoader implements DataLoader {
 
     private ExecutorService pool = Executors.newCachedThreadPool();
 
-    private BlockingQueue<RoadAccidentVo> roadAccidentVoesToPut = new ArrayBlockingQueue<RoadAccidentVo>(2000);
+    private BlockingQueue<RoadAccidentVo> roadAccidentVoesToPut = new ArrayBlockingQueue<RoadAccidentVo>(
+            Integer.valueOf(
+                    System.getProperty(KEY_CAPACITY_OF_TO_PUT_QUEUE, "2000")
+            ));
 
     protected BlockingQueue<RoadAccidentVo> getRoadAccidentVoesToPut() {
         return roadAccidentVoesToPut;
