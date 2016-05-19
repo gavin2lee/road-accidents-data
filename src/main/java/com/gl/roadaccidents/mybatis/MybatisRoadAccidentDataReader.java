@@ -40,11 +40,11 @@ public class MybatisRoadAccidentDataReader implements DataReader, Callable<Long>
 
     @Override
     public Long call() throws Exception {
-        log.info("START");
+        log.info("START at '{}'", new Date().toString());
 
         Long numberOfReadRecords =  read();
 
-        log.info("END and read {} records.", numberOfReadRecords);
+        log.info("END and read {} in total records at '{}'.", numberOfReadRecords, new Date().toString());
 
         return numberOfReadRecords;
     }

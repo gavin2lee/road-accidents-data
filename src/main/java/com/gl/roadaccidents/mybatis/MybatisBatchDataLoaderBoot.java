@@ -33,6 +33,7 @@ public class MybatisBatchDataLoaderBoot {
 
         System.setProperty(MybatisRoadAccidentDataLoader.KEY_CAPACITY_OF_TO_PUT_QUEUE, "5000");
         System.setProperty(MybatisRoadAccidentDataPutter.KEY_BATCH_SIZE, BATCH_SIZE);
+        System.setProperty(MybatisRoadAccidentDataPutter.KEY_BATCH_SIZE, "300");
 
         System.setProperty(MybatisRoadAccidentDataReader.KEY_SIZE_TO_LOG_READ, "6000");
         try {

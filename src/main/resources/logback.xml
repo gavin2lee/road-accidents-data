@@ -9,10 +9,10 @@
         </encoder>
     </appender>
     <!--每天生成一个日志文件，保存30天的日志文件。-->
-    <appender name="DebugDayFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="LogDayFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <Encoding>UTF-8</Encoding>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${PROJECT_NAME}/logFileDebug.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${PROJECT_NAME}/logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -32,11 +32,15 @@
      -->
     <!--指定logger name为包名或类全名 指定级别 additivity设置是否传递到root logger -->
     <logger name="com.gl.roadaccidents.mybatis.repository" level="INFO" additivity="false">
-        <appender-ref ref="DebugDayFile"/>
+        <appender-ref ref="LogDayFile"/>
+    </logger>
+
+    <logger name="com.gl.roadaccidents.mybatis" level="INFO" additivity="false">
+        <appender-ref ref="LogDayFile"/>
     </logger>
 
     <logger name="com.gl.roadaccidents" level="DEBUG" additivity="false">
-        <appender-ref ref="DebugDayFile"/>
+        <appender-ref ref="LogDayFile"/>
     </logger>
     <!-- 
     <logger name="com.corejava" level="INFO" additivity="false">

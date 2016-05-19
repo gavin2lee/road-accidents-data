@@ -77,7 +77,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
                     pool.shutdown();
                 }
 
-                log.info("No object got from queue and try to exit.");
+                log.info("No object got from queue and try to exit at '{}'.", new Date().toString());
                 break;
             }else{
                 count++;
@@ -120,7 +120,7 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
 
         while (true) {
             if (vo == null) {
-                log.warn("No object polled from queue. Try to exit.");
+                log.warn("No object polled from queue. Try to exit at '{}'.", new Date().toString());
                 if (pool != null) {
                     pool.shutdown();
                 }
@@ -146,11 +146,11 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
 
     @Override
     public Long call() throws Exception {
-        log.info("START");
+        log.info("START at '{}'", new Date().toString());
 
         Long result = put();
 
-        log.info("END and put {} records.", result);
+        log.info("END and put {} records at '{}'.", result, new Date().toString());
 
         return result;
     }
@@ -163,14 +163,14 @@ public class MybatisRoadAccidentDataPutter implements DataPutter, Callable<Long>
             occurOn = new SimpleDateFormat("dd/MM/yyyy").parse(vo.getOccurOn());
 
         } catch (ParseException e) {
-            log.warn("Malformed date : " + vo.getOccurOn(), e);
+            log.warn("Malformed occurOn : " + vo.toString());
             occurOn = null;
         }
 
         try {
             occurAt = new SimpleDateFormat("HH:mm").parse(vo.getOccurAt());
         } catch (ParseException e) {
-            log.warn("Malformed time: " + vo.getOccurAt(), e);
+            log.warn("Malformed occurAt: " + vo.toString());
             occurAt = null;
         }
         RoadAccident ra = RoadAccidentBuilder.newBuilder().setAccidentIndex(vo.getAccidentIndex())

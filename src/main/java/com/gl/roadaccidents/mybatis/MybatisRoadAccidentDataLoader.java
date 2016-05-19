@@ -221,7 +221,7 @@ public class MybatisRoadAccidentDataLoader implements DataLoader {
             long endTime = endAt.getTime();
 
             double minutes = (endTime - startTime)*1.0/(1000*60*1.0);
-            log.info("HOOK: {} minutes spent.", minutes);
+            log.info("HOOK: {} minutes totally spent.", minutes);
         };
 
         Runtime.getRuntime().addShutdownHook(new Thread(hook));

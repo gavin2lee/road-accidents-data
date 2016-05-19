@@ -1,0 +1,14 @@
+MybatisBatchDataLoaderBoot
+540014 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: start at 'Thu May 19 09:53:44 CST 2016'
+540014 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: end at 'Thu May 19 10:02:39 CST 2016'
+540015 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: 8.925533333333334 minutes spent.
+
+batch size 600
+490365 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: start at 'Thu May 19 10:27:01 CST 2016'
+490366 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: end at 'Thu May 19 10:35:08 CST 2016'
+490366 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: 8.110516666666667 minutes spent.
+
+batch size 300
+473538 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: start at 'Thu May 19 10:37:59 CST 2016'
+473538 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: end at 'Thu May 19 10:45:49 CST 2016'
+473538 [Thread-2] INFO  c.g.r.m.MybatisRoadAccidentDataLoader - HOOK: 7.833516666666666 minutes spent.
