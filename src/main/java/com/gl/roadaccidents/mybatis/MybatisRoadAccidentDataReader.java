@@ -62,7 +62,7 @@ public class MybatisRoadAccidentDataReader implements DataReader, Callable<Long>
                 this.toStore.offer(vo, 10, TimeUnit.SECONDS);
 
                 result++;
-                if (result % 100 == 0) {
+                if (result % sizeToLog == 0) {
                     log.debug("Read {} from {}", result, resource.getURI().toString());
                 }
 
